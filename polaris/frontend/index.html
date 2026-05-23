@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polaris — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Familjen+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0c0d10;--panel:#131419;--panel2:#191b22;--line:#262833;--ink:#f3f1ea;--muted:#9a9aa6;--faint:#62636e;--accent:#e8633a;--green:#5ec98a;--red:#e8633a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(800px 460px at 80% -10%,rgba(232,99,58,.10),transparent 60%)}
+  .mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;letter-spacing:-.01em}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 22px;position:relative;z-index:1}
+  button{font-family:'Familjen Grotesk';cursor:pointer}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;padding:10px 16px;border-radius:10px;border:1px solid transparent;transition:.16s}
+  .btn-primary{background:var(--accent);color:#190a05}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(232,99,58,.3)}
+  .btn-ghost{border-color:var(--line);color:var(--ink);background:transparent}
+  .btn-ghost:hover{border-color:var(--faint);background:var(--panel)}
+  .hidden{display:none!important}
+
+  /* ---- auth screen ---- */
+  #auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px}
+  .card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:34px}
+  .logo{display:flex;align-items:center;gap:9px;font-family:'Fraunces';font-size:22px;font-weight:600;margin-bottom:8px}
+  .logo .dot{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+  .card p.sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+  input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--ink);font-family:inherit;font-size:14px}
+  input:focus{outline:none;border-color:var(--accent)}
+  .auth-actions{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+  .auth-actions .btn{justify-content:center;width:100%}
+  .toggle{text-align:center;font-size:13px;color:var(--muted);margin-top:16px}
+  .toggle a{color:var(--accent);cursor:pointer}
+  .msg{font-size:13px;margin-top:14px;padding:10px 12px;border-radius:8px;display:none}
+  .msg.err{display:block;background:rgba(232,99,58,.12);color:var(--accent);border:1px solid rgba(232,99,58,.3)}
+  .hint{margin-top:18px;font-size:12px;color:var(--faint);text-align:center;line-height:1.6}
+
+  /* ---- app ---- */
+  header.bar{border-bottom:1px solid var(--line);background:rgba(12,13,16,.7);backdrop-filter:blur(10px);position:sticky;top:0;z-index:20}
+  .bar-in{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .bar .logo{margin:0;font-size:19px}
+  .who{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--muted)}
+
+  .toprow{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:34px 0 22px;flex-wrap:wrap}
+  .toprow h2{font-size:30px}
+  .toprow .sel{display:flex;gap:10px;align-items:center}
+  select{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:680px){.stats{grid-template-columns:1fr}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .stat .k{font-family:'JetBrains Mono';font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
+  .stat .v{font-family:'Fraunces';font-size:34px;margin-top:8px}
+  .stat .d{font-size:13px;font-weight:600;margin-top:4px}
+  .stat .d.up{color:var(--green)} .stat .d.down{color:var(--red)}
+
+  .chartwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+  .chartwrap .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .panel h3{font-size:18px;margin-bottom:6px}
+  .panel p{color:var(--muted);font-size:13.5px;margin-bottom:14px}
+  .uprow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .filechip{font-size:13px;color:var(--faint)}
+  .small{font-size:12px;color:var(--faint);margin-top:12px;line-height:1.6}
+  code{font-family:'JetBrains Mono';background:var(--bg);border:1px solid var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth">
+  <div class="card">
+    <div class="logo"><span class="dot"></span>Polaris</div>
+    <p class="sub" id="authSub">Sign in to your analytics workspace.</p>
+
+    <label>Email</label>
+    <input id="email" type="email" placeholder="you@company.com" autocomplete="email">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+
+    <div class="msg" id="authMsg"></div>
+
+    <div class="auth-actions">
+      <button class="btn btn-primary" id="authBtn">Sign in</button>
+    </div>
+    <div class="toggle" id="toggleAuth">No account? <a id="toggleLink">Create one</a></div>
+    <div class="hint">Try the live demo:<br><code>demo@polaris.app</code> / <code>demo123</code></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <header class="bar"><div class="wrap bar-in">
+    <div class="logo"><span class="dot"></span>Polaris</div>
+    <div class="who"><span id="userEmail"></span><button class="btn btn-ghost" id="logout">Log out</button></div>
+  </div></header>
+
+  <main class="wrap">
+    <div class="toprow">
+      <h2>Overview</h2>
+      <div class="sel">
+        <span class="mono">Dataset</span>
+        <select id="datasetSel"></select>
+      </div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="chartwrap">
+      <div class="head">
+        <span class="mono">Trend · full range</span>
+        <div class="legend" id="legend"></div>
+      </div>
+      <svg id="chart" viewBox="0 0 920 320" width="100%" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div class="panel">
+      <h3>Upload a dataset</h3>
+      <p>CSV with three columns: <code>date</code>, <code>metric_name</code>, <code>metric_value</code>. Each metric becomes its own line on the chart.</p>
+      <div class="uprow">
+        <input type="file" id="file" accept=".csv" style="display:none">
+        <button class="btn btn-ghost" id="pickBtn">Choose CSV</button>
+        <span class="filechip" id="fileName">No file selected</span>
+        <button class="btn btn-primary" id="uploadBtn">Upload</button>
+      </div>
+      <div class="small" id="upMsg"></div>
+      <div class="small">Example:<br>
+        <code>date,metric_name,metric_value</code><br>
+        <code>2024-06-01,active_users,1200</code><br>
+        <code>2024-06-01,revenue,4500</code>
+      </div>
+    </div>
+  </main>
+  <div style="height:40px"></div>
+</div>
+
+<script>
+// Same-origin in production (server serves this file). For local dev against
+// a separate API port, set API to "http://localhost:5000".
+const API = "";
+const COLORS = ["#e8633a", "#5ec98a", "#6aa6ff", "#d6b14e", "#b07ce8"];
+
+const $ = (id) => document.getElementById(id);
+const token = () => localStorage.getItem("polaris_token");
+const setToken = (t) => localStorage.setItem("polaris_token", t);
+const clearToken = () => localStorage.removeItem("polaris_token");
+
+async function api(path, opts = {}) {
+  const headers = { ...(opts.headers || {}) };
+  if (token()) headers.Authorization = "Bearer " + token();
+  if (opts.json) { headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.json); }
+  const res = await fetch(API + path, { ...opts, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+/* ---------- auth ---------- */
+let mode = "login";
+$("toggleLink").onclick = () => {
+  mode = mode === "login" ? "signup" : "login";
+  $("authSub").textContent = mode === "login" ? "Sign in to your analytics workspace." : "Create your analytics workspace.";
+  $("authBtn").textContent = mode === "login" ? "Sign in" : "Create account";
+  $("toggleAuth").innerHTML = mode === "login" ? 'No account? <a id="toggleLink">Create one</a>' : 'Have an account? <a id="toggleLink">Sign in</a>';
+  $("toggleLink").onclick = arguments.callee; // rebind
+  document.getElementById("toggleLink").onclick = () => $("toggleLink").click();
+};
+// simpler: rebind cleanly
+function bindToggle(){
+  $("toggleLink").onclick = () => {
+    mode = mode === "login" ? "signup" : "login";
+    $("authSub").textContent = mode === "login" ? "Sign in to your analytics workspace." : "Create your analytics workspace.";
+    $("authBtn").textContent = mode === "login" ? "Sign in" : "Create account";
+    $("toggleAuth").innerHTML = mode === "login" ? 'No account? <a id="toggleLink">Create one</a>' : 'Have an account? <a id="toggleLink">Sign in</a>';
+    bindToggle();
+  };
+}
+bindToggle();
+
+$("authBtn").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  const m = $("authMsg"); m.className = "msg";
+  try {
+    const data = await api("/auth/" + mode, { method: "POST", json: { email, password } });
+    setToken(data.token);
+    enterApp(data.user.email);
+  } catch (e) { m.className = "msg err"; m.textContent = e.message; }
+};
+$("password").addEventListener("keydown", (e) => { if (e.key === "Enter") $("authBtn").click(); });
+
+$("logout").onclick = () => { clearToken(); location.reload(); };
+
+/* ---------- app ---------- */
+async function enterApp(email) {
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("userEmail").textContent = email;
+  await loadDatasets();
+}
+
+async function loadDatasets() {
+  const sets = await api("/dashboard/datasets");
+  const sel = $("datasetSel");
+  sel.innerHTML = "";
+  if (sets.length === 0) {
+    sel.innerHTML = '<option>No datasets yet — upload one below</option>';
+    $("stats").innerHTML = ""; $("chart").innerHTML = ""; $("legend").innerHTML = "";
+    return;
+  }
+  sets.forEach((d) => {
+    const o = document.createElement("option");
+    o.value = d.id; o.textContent = `${d.name} (${d.point_count} pts)`;
+    sel.appendChild(o);
+  });
+  sel.onchange = () => renderDataset(sel.value);
+  renderDataset(sets[0].id);
+}
+
+async function renderDataset(id) {
+  const [stats, series] = await Promise.all([
+    api("/dashboard/stats/" + id),
+    api("/dashboard/data/" + id),
+  ]);
+  renderStats(stats);
+  renderChart(series);
+}
+
+function renderStats(stats) {
+  $("stats").innerHTML = stats.map((s) => {
+    const up = s.change_pct >= 0;
+    const val = s.latest.toLocaleString();
+    return `<div class="stat">
+      <div class="k">${s.metric_name.replace(/_/g, " ")}</div>
+      <div class="v">${val}</div>
+      <div class="d ${up ? "up" : "down"}">${up ? "▲" : "▼"} ${Math.abs(s.change_pct)}% over range</div>
+    </div>`;
+  }).join("");
+}
+
+function renderChart(series) {
+  const names = Object.keys(series);
+  const svg = $("chart");
+  const W = 920, H = 320, padL = 48, padR = 16, padT = 16, padB = 28;
+  const allVals = names.flatMap((n) => series[n].map((p) => p.value));
+  const max = Math.max(...allVals, 1), min = Math.min(...allVals, 0);
+  const len = Math.max(...names.map((n) => series[n].length), 1);
+  const x = (i) => padL + (i / (len - 1 || 1)) * (W - padL - padR);
+  const y = (v) => padT + (1 - (v - min) / (max - min || 1)) * (H - padT - padB);
+
+  let out = "";
+  // gridlines
+  for (let g = 0; g <= 4; g++) {
+    const gy = padT + (g / 4) * (H - padT - padB);
+    const gv = Math.round(max - (g / 4) * (max - min));
+    out += `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="#262833" stroke-width="1"/>`;
+    out += `<text x="${padL - 8}" y="${gy + 4}" fill="#62636e" font-size="11" font-family="JetBrains Mono" text-anchor="end">${gv.toLocaleString()}</text>`;
+  }
+  // lines
+  names.forEach((n, idx) => {
+    const c = COLORS[idx % COLORS.length];
+    const pts = series[n].map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
+    out += `<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const last = series[n][series[n].length - 1];
+    out += `<circle cx="${x(series[n].length - 1)}" cy="${y(last.value)}" r="3.5" fill="${c}"/>`;
+  });
+  svg.innerHTML = out;
+
+  $("legend").innerHTML = names.map((n, i) =>
+    `<span><i style="background:${COLORS[i % COLORS.length]}"></i>${n.replace(/_/g, " ")}</span>`
+  ).join("");
+}
+
+/* ---------- upload ---------- */
+let chosen = null;
+$("pickBtn").onclick = () => $("file").click();
+$("file").onchange = (e) => { chosen = e.target.files[0]; $("fileName").textContent = chosen ? chosen.name : "No file selected"; };
+$("uploadBtn").onclick = async () => {
+  const m = $("upMsg");
+  if (!chosen) { m.textContent = "Pick a CSV first."; return; }
+  m.textContent = "Uploading…";
+  const fd = new FormData(); fd.append("file", chosen);
+  try {
+    const r = await api("/upload", { method: "POST", body: fd });
+    m.textContent = `✓ Uploaded ${r.rows_inserted} rows.`;
+    chosen = null; $("file").value = ""; $("fileName").textContent = "No file selected";
+    await loadDatasets();
+  } catch (e) { m.textContent = "✗ " + e.message; }
+};
+
+/* ---------- boot: if a token exists, skip login ---------- */
+(async () => {
+  if (token()) {
+    try { const me = await api("/auth/me"); if (me) return enterApp(me.email); }
+    catch { clearToken(); }
+  }
+})();
+</script>
+</body>
+</html>
