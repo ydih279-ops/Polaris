@@ -24,7 +24,7 @@ app.use("/upload", uploadRouter);
 app.use("/dashboard", dashboardRouter);
 
 // Serve the frontend (single folder of static files) in production.
-const publicDir = path.join(__dirname, "public");
+const publicDir = path.join(__dirname, "frontend");
 app.use(express.static(publicDir));
 app.get("*", (_req, res) => res.sendFile(path.join(publicDir, "index.html")));
 
